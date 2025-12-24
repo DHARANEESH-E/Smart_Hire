@@ -1,0 +1,1 @@
+Demo resume content for testing purposes. Skills: React, Node.js, JavaScript, MongoDB.

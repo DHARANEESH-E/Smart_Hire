@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireSmart API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        .test-section {
+            background: #16213e;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #0f3460;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #4f46e5;
+        }
+        .result {
+            background: #0f3460;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        h1 { color: #6366f1; }
+        h3 { color: #a5b4fc; }
+    </style>
+</head>
+<body>
+    <h1>🔧 HireSmart API Diagnostic Tool</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Backend Connection</h3>
+        <button onclick="testBackend()">Test Backend API</button>
+        <div id="backend-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Login</h3>
+        <button onclick="testLogin()">Test Login (test@example.com)</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Jobs API</h3>
+        <button onclick="testJobs()">Fetch Jobs</button>
+        <div id="jobs-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Open Main App</h3>
+        <button onclick="window.open('http://127.0.0.1:5173/', '_blank')">Open HireSmart App</button>
+    </div>
+
+    <script>
+        async function testBackend() {
+            const result = document.getElementById('backend-result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/');
+                const text = await response.text();
+                result.innerHTML = `<span class="success">✅ Backend is running!</span>\n${text}`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Backend connection failed!</span>\n${error.message}`;
+            }
+        }
+
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            result.innerHTML = 'Testing login...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `<span class="success">✅ Login successful!</span>\n${JSON.stringify(data, null, 2)}`;
+                    localStorage.setItem('user', JSON.stringify(data));
+                } else {
+                    result.innerHTML = `<span class="error">❌ Login failed!</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Login request failed!</span>\n${error.message}`;
+            }
+        }
+
+        async function testJobs() {
+            const result = document.getElementById('jobs-result');
+            result.innerHTML = 'Fetching jobs...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/jobs');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `<span class="success">✅ Jobs loaded successfully!</span>\nTotal jobs: ${data.length}\n\nFirst 3 jobs:\n${JSON.stringify(data.slice(0, 3), null, 2)}`;
+                } else {
+                    result.innerHTML = `<span class="error">❌ Failed to fetch jobs!</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Jobs request failed!</span>\n${error.message}`;
+            }
+        }
+
+        // Auto-run tests on page load
+        window.onload = () => {
+            testBackend();
+            setTimeout(testLogin, 500);
+            setTimeout(testJobs, 1000);
+        };
+    </script>
+</body>
+</html>
